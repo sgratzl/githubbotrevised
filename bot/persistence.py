@@ -5,7 +5,7 @@ from telegram.ext import PicklePersistence
 
 
 class Persistence(PicklePersistence):
-    def __init__(self, filename):
+    def __init__(self, filename: str):
         super().__init__(filename, store_user_data=True, store_chat_data=True, singe_file=True, on_flush=True)
 
         self.github_data = None

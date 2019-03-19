@@ -34,14 +34,14 @@ class BaseWebhookHandler(RequestHandler):
         self.process_data(data)
 
     def process_data(self, data: Dict):
-        raise NotImplemented
+        raise NotImplementedError
 
     def validate(self):
         ct_header = self.request.headers.get("Content-Type", None)
         if ct_header != 'application/json':
             raise HTTPError(403, reason='Content type must be application/json!')
 
-    def write_error(self, status_code, **kwargs):
+    def write_error(self, status_code: int, **kwargs):
         super().write_error(status_code, **kwargs)
         self.logger.debug('%s - - %s' % (self.request.remote_ip, 'Exception in WebhookHandler'),
                           exc_info=kwargs['exc_info'])

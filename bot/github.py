@@ -16,7 +16,7 @@ TRUNCATED_MESSAGE = '\n<b>[Truncated message, open on GitHub to read more]</b>'
 REPLY_MESSAGE = '\n\n<i>Reply to this message to post a comment on GitHub (use ! to suppress).</i>'
 
 
-def render_github_markdown(markdown, context: str):
+def render_github_markdown(markdown: str, context: str):
     html = github_api.markdown(markdown, context)
     return github_cleaner.clean(html).strip('\n')
 

@@ -88,7 +88,7 @@ def privacy_handler(update: Update, context: CallbackContext):
     )
 
 
-def login_handler(update: Update, context):
+def login_handler(update: Update, context: CallbackContext):
     context.menu_stack = ['settings']
     reply_menu(update, context, settings.login_menu)
 
@@ -157,6 +157,8 @@ if __name__ == '__main__':
     dp.add_handler(CommandHandler('help', help_handler))
     dp.add_handler(CommandHandler('privacy', privacy_handler))
     dp.add_handler(CommandHandler('login', login_handler))
+    dp.add_handler(CommandHandler('add_repo', add_repo_handler))
+    dp.add_handler(CommandHandler('remove_repo', remove_repo_handler))
 
     settings.add_handlers(dp)
 

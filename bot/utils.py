@@ -35,14 +35,14 @@ def secure_decode_64(input_data: str, secret: bytes) -> Any:
     return pickle.loads(raw_data)
 
 
-def secure_encode_65536(input_data, secret):
+def secure_encode_65536(input_data: Any, secret: bytes) -> str:
     pickled = pickle.dumps(input_data)
     length = str(len(pickled)).encode('ascii')
     hmac_hash = hmac.new(secret, pickled, hashlib.sha256).digest()
     return base65536.encode(length + b'\0' + pickled + hmac_hash)
 
 
-def secure_decode_65536(input_data, secret):
+def secure_decode_65536(input_data: str, secret: bytes) -> Any:
     decoded_data = base65536.decode(input_data)
     length, _, data_and_hash = decoded_data.partition(b'\0')
     length = int(length.decode('ascii'))
@@ -52,25 +52,25 @@ def secure_decode_65536(input_data, secret):
     return pickle.loads(raw_data)
 
 
-def encode_data_link(data):
+def encode_data_link(data: Any) -> str:
     return f'<a href="{URL_BASE}{secure_encode_65536(data, HMAC_SECRET)}">\u200b</a>'
 
 
-def decode_data_link(url):
+def decode_data_link(url: str) -> Any:
     return secure_decode_65536(url[len(URL_BASE):], HMAC_SECRET)
 
 
-def decode_data_entity(entity):
+def decode_data_entity(entity) -> Any:
     return decode_data_link(entity.url)
 
 
-def decode_first_data_entity(entities):
+def decode_first_data_entity(entities) -> Any:
     for entity in entities:
         if entity.type == MessageEntity.TEXT_LINK and entity.url.startswith(URL_BASE):
             return decode_data_entity(entity)
 
 
-def deep_link(bot, data):
+def deep_link(bot, data: str) -> str:
     return f'https://telegram.me/{bot.username}?start={data}'
 
 
@@ -86,5 +86,5 @@ class _ReplyDataLinkFilter(BaseFilter):
 reply_data_link_filter = _ReplyDataLinkFilter()
 
 
-def link(url, text):
+def link(url: str, text: str):
     return f'<a href="{url}">{text}</a>'

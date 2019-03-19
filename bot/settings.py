@@ -1,8 +1,9 @@
 from itertools import zip_longest
 from uuid import uuid4
+from typing import Iterable, Any
 
-from telegram import Chat, InlineQueryResultArticle, InputTextMessageContent, ParseMode
-from telegram.ext import Dispatcher, InlineQueryHandler, CommandHandler
+from telegram import Update, Chat, InlineQueryResultArticle, InputTextMessageContent, ParseMode
+from telegram.ext import Dispatcher, InlineQueryHandler, CommandHandler, CallbackContext
 
 from bot.const import DEFAULT_TRUNCATION_LIMIT
 from bot.github import github_api
@@ -17,13 +18,13 @@ class InlineQueries(object):
     add_repo = 'Add repository:'
 
 
-def grouper(iterable, n, fillvalue=None):
+def grouper(iterable: Iterable[Any], n: int, fillvalue=None):
     """Collect data into fixed-length chunks or blocks"""
     args = [iter(iterable)] * n
     return zip_longest(*args, fillvalue=fillvalue)
 
 
-def settings_text(update, context):
+def settings_text(update: Update, context: CallbackContext):
     private = update.effective_chat.type == Chat.PRIVATE
 
     text = f'⚙ Settings for {context.bot.name}\n\n'
@@ -45,7 +46,7 @@ def settings_text(update, context):
     return text
 
 
-def settings_buttons(update, context):
+def settings_buttons(update: Update, context: CallbackContext):
     private = update.effective_chat.type == Chat.PRIVATE
 
     buttons = []
@@ -65,7 +66,7 @@ def settings_buttons(update, context):
     return [[button] for button in buttons]
 
 
-def settings_set_data(_, context):
+def settings_set_data(_, context: CallbackContext):
     if context.key == 'login' and context.value is None:
         del context.user_data['access_token']
 
@@ -78,7 +79,7 @@ settings_menu = Menu(
 )
 
 
-def login_text(update, context):
+def login_text(update: Update, context: CallbackContext):
     access_token = context.user_data.get('access_token')
 
     if access_token:
@@ -101,7 +102,7 @@ login_menu = Menu(
 )
 
 
-def repos_buttons(update, context):
+def repos_buttons(update: Update, context: CallbackContext):
     repos = context.chat_data.get('repos', {})
     buttons = []
 
@@ -122,7 +123,7 @@ repos_menu = Menu(
 )
 
 
-def repo_text(update, context):
+def repo_text(update: Update, context: CallbackContext):
     try:
         repo = context.chat_data['repos'][int(context.match.group(1))]
     except KeyError:
@@ -133,7 +134,7 @@ def repo_text(update, context):
             f'or press the remove button to stop receiving notifications for it.')
 
 
-def repo_buttons(update, context):
+def repo_buttons(update: Update, context: CallbackContext):
     try:
         repo: Repo = context.chat_data['repos'][int(context.match.group(1))]
     except KeyError:
@@ -155,7 +156,7 @@ def repo_buttons(update, context):
     ]
 
 
-def repo_set_data(update, context):
+def repo_set_data(update: Update, context: CallbackContext):
     repo_id = int(context.match.group(1))
 
     if context.key == 'remove':
@@ -174,7 +175,7 @@ repo_menu = Menu(
 )
 
 
-def chat_text(update, context):
+def chat_text(update: Update, context: CallbackContext):
     if update.effective_chat.title:
         chat = update.effective_chat.title
     elif update.effective_chat.first_name:
@@ -184,7 +185,7 @@ def chat_text(update, context):
     return f'⚙ Settings for {context.bot.name} for {chat}\n\n'
 
 
-def chat_buttons(update, context):
+def chat_buttons(update: Update, context: CallbackContext):
     truncation_limit = context.chat_data.get('truncation_limit', DEFAULT_TRUNCATION_LIMIT)
     truncation_limits = [256, 512, 1024, 2048, 4096]
     truncation_limit_states = [(limit, f'Max notification message length: {limit}') for limit in truncation_limits]
@@ -195,7 +196,7 @@ def chat_buttons(update, context):
     ]
 
 
-def chat_set_data(update, context):
+def chat_set_data(update: Update, context: CallbackContext):
     context.chat_data[context.key] = context.value
 
 
@@ -207,14 +208,14 @@ chat_settings_menu = Menu(
 )
 
 
-def settings_command(update, context):
+def settings_command(update: Update, context: CallbackContext):
     if context.args:
         context.menu_stack = context.args
 
     reply_menu(update, context, settings_menu)
 
 
-def inline_add_repo(update, context):
+def inline_add_repo(update: Update, context: CallbackContext):
     offset = update.inline_query.offset
     installation_offset, repo_offset = -1, -1
     if offset:
@@ -277,7 +278,7 @@ def inline_add_repo(update, context):
     )
 
 
-def add_repo_command(update, context):
+def add_repo_command(update: Update, context: CallbackContext):
     repos = context.chat_data.setdefault('repos', {})
     access_token = context.user_data['access_token']
     repo_id = decode_first_data_entity(update.effective_message.entities)
